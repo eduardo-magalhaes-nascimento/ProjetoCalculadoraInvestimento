@@ -1,9 +1,13 @@
 import { generateReturnsArray } from "./src/investimentGoals.js";
 
 const form = document.getElementById("investment-form");
+const clearFormButton = document.getElementById("clear-form")
 
 function renderProgression(evt) {
   evt.preventDefault();
+  if (document.querySelector(".error")) {
+    return false;
+  }
   //   const startingAmount = form['starting-amount']
   const startingAmount = Number(
     document.getElementById("starting-amount").value.replace(",", ".")
@@ -33,29 +37,54 @@ function renderProgression(evt) {
   console.log(returnsArray);
 }
 
+function clearForm() {
+  form["starting-amount"].value = "";
+  form["additional-contribution"].value = "";
+  form["time-amount"].value = "";
+  form["return-rate"].value = "";
+  form["tax-rate"].value = "";
+
+  const errorInputContainers = document.querySelectorAll('.error');
+
+  for (const errorInputContainer of errorInputContainers) {
+    errorInputContainer.classList.remove('error')
+    errorInputContainer.parentElement.querySelector('p').remove()
+  }
+}
+
 function validateInput(evt) {
-  if(evt.target.value === '') {
+  if (evt.target.value === "") {
     return;
   }
 
   const { parentElement } = evt.target; // Tag pai tem que ser pintada
   const grandParentElement = evt.target.parentElement.parentElement; // Tag avo tem que ser adicionada a altura
-  const inputValue = evt.target.value.replace(',','.');
-  if(isNaN(inputValue) || Number(inputValue) <= 0){
-    const errorTextElement = document.createElement('p'); //<p></p>
-    errorTextElement.classList.add('text-red-500'); //<p class="text-red-500"></p>
+  const inputValue = evt.target.value.replace(",", ".");
+  if (
+    !parentElement.classList.contains("error") &&
+    (Number(inputValue) <= 0 || isNaN(inputValue))
+  ) {
+    const errorTextElement = document.createElement("p"); //<p></p>
+    errorTextElement.classList.add("text-red-500"); //<p class="text-red-500"></p>
     errorTextElement.innerText = "Insira um valor númerico e maior que zero";
 
-    parentElement.classList.add('error');
-    grandParentElement.appendChild(errorTextElement)
+    parentElement.classList.add("error");
+    grandParentElement.appendChild(errorTextElement);
+  } else if (
+    parentElement.classList.contains("error") &&
+    !isNaN(inputValue) &&
+    Number(inputValue) > 0
+  ) {
+    parentElement.classList.remove("error");
+    grandParentElement.querySelector("p").remove();
   }
-
 }
 
 for (const formElement of form) {
-  if(formElement.tagName === 'INPUT' && formElement.hasAttribute('name')) {
-    formElement.addEventListener('blur', validateInput);
+  if (formElement.tagName === "INPUT" && formElement.hasAttribute("name")) {
+    formElement.addEventListener("blur", validateInput);
   }
 }
 
 form.addEventListener("submit", renderProgression);
+clearFormButton.addEventListener('click', clearForm)
